@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-gray-50">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= title %></title>
+    <link href="/public/output.css" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="min-h-screen flex flex-col">
+      <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+        <div class="container mx-auto flex justify-between items-center p-5">
+          <h1 class="text-3xl font-extrabold tracking-tight drop-shadow-lg">Rundown List for <%= event.name %></h1>
+          <button id="send-reminders-btn" class="bg-blue-600 hover:bg-blue-700 transition text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg">
+            Kirim Pengingat WhatsApp Rundown
+          </button>
+        </div>
+      </header>
+
+      <section class="container mx-auto flex-grow p-6 space-y-8 max-w-4xl w-full">
+        <section class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-6 text-center">Tambah Rundown Baru</h2>
+          <form id="add-rundown-form" method="POST" action="/add_rundown/<%= event.id %>" class="space-y-6">
+            <div>
+              <label for="kegiatan" class="block text-gray-700 font-semibold mb-2">Kegiatan</label>
+              <input type="text" name="kegiatan" id="kegiatan" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="tempat" class="block text-gray-700 font-semibold mb-2">Tempat</label>
+              <input type="text" name="tempat" id="tempat" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="jam" class="block text-gray-700 font-semibold mb-2">Jam</label>
+              <input type="time" name="jam" id="jam" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="pembawa_acara" class="block text-gray-700 font-semibold mb-2">Pembawa Acara</label>
+              <input type="text" name="pembawa_acara" id="pembawa_acara" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 transition shadow-md hover:shadow-lg">Tambah Rundown</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="overflow-x-auto">
+          <% if (rundowns.length === 0) { %>
+            <p class="text-gray-600 text-center">Tidak ada rundown untuk acara ini.</p>
+          <% } else { %>
+            <table class="min-w-full bg-white rounded-lg shadow-md">
+              <thead>
+                <tr class="bg-blue-600 text-white text-left">
+                  <th class="py-3 px-6 rounded-tl-lg">Kegiatan</th>
+                  <th class="py-3 px-6">Tempat</th>
+                  <th class="py-3 px-6">Jam</th>
+                  <th class="py-3 px-6 rounded-tr-lg">Pembawa Acara</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% rundowns.forEach(rundown => { %>
+                  <tr class="border-b hover:bg-blue-50 transition">
+                    <td class="py-4 px-6"><%= rundown.kegiatan %></td>
+                    <td class="py-4 px-6"><%= rundown.tempat %></td>
+                    <td class="py-4 px-6"><%= rundown.jam %></td>
+                    <td class="py-4 px-6"><%= rundown.pembawa_acara %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          <% } %>
+        </section>
+      </section>
+
+      <footer class="bg-gray-100 text-center p-6 text-gray-500 border-t border-gray-300 mt-auto">
+        <p>&copy; 2023 My Ambition. All rights reserved.</p>
+      </footer>
+
+      <script>
+        document.getElementById('send-reminders-btn').addEventListener('click', async () => {
+          const btn = document.getElementById('send-reminders-btn');
+          const status = document.getElementById('reminder-status');
+          const error = document.getElementById('reminder-error');
+          btn.disabled = true;
+          status.classList.add('hidden');
+          error.classList.add('hidden');
+
+          try {
+            const response = await fetch('/api/send_rundown_reminders/<%= event.id %>', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+              status.classList.remove('hidden');
+            } else {
+              error.classList.remove('hidden');
+            }
+          } catch (e) {
+            error.classList.remove('hidden');
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      </script>
+    </main>
+  </body>
+</html>

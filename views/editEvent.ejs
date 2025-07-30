@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Event - <%= event.name %></title>
+  <link href="/public/output.css" rel="stylesheet" />
+  <style>
+    /* Custom styles for form */
+    .form-container {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+    }
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .btn-primary {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <header class="bg-blue-600 shadow p-4 text-white">
+    <h1 class="text-3xl font-bold text-center ">Edit Event</h1>
+  </header>
+  <main class="flex-grow">
+    <div class="form-container">
+      <form action="/edit-event/<%= event.id %>" method="POST" novalidate>
+        <div class="mb-4">
+          <label for="nama" class="form-label">Event Name</label>
+          <input
+            type="text"
+            id="nama"
+            name="nama"
+            class="form-input"
+            value="<%= event.name %>"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label for="alamat" class="form-label">Location</label>
+          <input
+            type="text"
+            id="alamat"
+            name="alamat"
+            class="form-input"
+            value="<%= event.location %>"
+            required
+          />
+        </div>
+        <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="waktuAcara" class="form-label">Date</label>
+            <input
+              type="date"
+              id="waktuAcara"
+              name="waktuAcara"
+              class="form-input"
+              value="<%= event.date.toISOString().slice(0,10) %>"
+              required
+            />
+          </div>
+          <div>
+            <label for="jamAcara" class="form-label">Time</label>
+            <input
+              type="time"
+              id="jamAcara"
+              name="jamAcara"
+              class="form-input"
+              value="<%= event.time %>"
+              required
+            />
+          </div>
+        </div>
+        <div class="mb-6">
+          <label for="description" class="form-label">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            class="form-textarea"
+            required
+          ><%= event.description %></textarea>
+        </div>
+        <div class="flex justify-between items-center">
+          <a href="/dashboard" class="text-blue-600 hover:underline">Cancel</a>
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </main>
+  <footer class="bg-white text-center p-4 text-gray-500 text-sm">
+    &copy; 2024 Event Management
+  </footer>
+</body>
+</html>

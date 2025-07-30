@@ -1,0 +1,29 @@
+{
+  "name": "eo_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "tail": "npx @tailwindcss/cli -i ./public/input.css -o ./public/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "ejs": "^3.1.10",
+    "formidable": "^3.5.4",
+    "mysql2": "^3.14.2",
+    "node-cron": "^4.2.1",
+    "nodemon": "^3.1.10",
+    "postcss": "^8.5.6",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0",
+    "sweetalert": "^2.1.2",
+    "tailwindcss": "^4.1.11",
+    "whatsapp-web.js": "^1.31.0"
+  }
+}

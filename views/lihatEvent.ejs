@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/output.css" />
+</head>
+<body class="bg-gray-50 font-sans min-h-screen flex flex-col">
+  <main class="flex-grow flex flex-col">
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md">
+      <div class="container mx-auto flex justify-between items-center p-6 max-w-7xl">
+        <h1 class="text-4xl font-extrabold tracking-wide drop-shadow-lg">Detail Event</h1>
+        <a href="/dashboard" class="bg-gray-900 bg-opacity-80 hover:bg-opacity-100 text-white px-5 py-2 rounded-md font-semibold transition-shadow shadow-md hover:shadow-lg">
+          Kembali
+        </a>
+      </div>
+    </header>
+    <section class="container mx-auto flex-grow p-8 max-w-7xl">
+      <div class="bg-white p-10 rounded-2xl shadow-xl">
+        <h2 class="text-5xl font-extrabold mb-8 text-gray-900 drop-shadow-sm"><%= event.name %></h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 text-gray-700 text-lg">
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Lokasi</h3>
+            <p class="leading-relaxed"><%= event.location %></p>
+          </div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Tanggal</h3>
+            <p class="leading-relaxed"><%= new Date(event.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></p>
+          </div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Waktu</h3>
+            <p class="leading-relaxed"><%= new Date('1970-01-01T' + event.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %></p>
+          </div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Deskripsi</h3>
+            <p class="leading-relaxed whitespace-pre-line"><%= event.description %></p>
+          </div>
+        </div>
+        <hr class="my-10 border-gray-300" />
+        <section>
+          <h3 class="text-3xl font-bold mb-6 text-gray-900">Daftar Tamu</h3>
+          <% if (guests.length === 0) { %>
+            <p class="text-gray-600 text-lg">Belum ada tamu yang terdaftar.</p>
+          <% } else { %>
+            <ul class="space-y-4">
+              <% guests.forEach(guest => { %>
+                <li>
+                  <div class="flex items-center gap-6 bg-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <% if (guest.photo_url) { %>
+                      <img src="<%= guest.photo_url %>" alt="Foto <%= guest.name %>" class="w-16 h-16 rounded-full object-cover border-2 border-blue-600" />
+                    <% } else { %>
+                      <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold border-2 border-gray-400">No Photo</div>
+                    <% } %>
+                    <div>
+                      <p class="font-semibold text-xl text-gray-900"><%= guest.name %></p>
+                      <p class="text-sm text-gray-700"><%= guest.email %></p>
+                      <p class="text-sm text-gray-700">No Telp: <%= guest.phone || '-' %></p>
+                    </div>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+          <hr class="my-10 border-gray-300" />
+        </section>
+        <section>
+          <h3 class="text-3xl font-bold mb-6 text-gray-900">Dokumentasi</h3>
+          <% if (documentation.length === 0) { %>
+            <p class="text-gray-600 text-lg">Belum ada dokumentasi yang diupload.</p>
+          <% } else { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              <% documentation.forEach(doc => { %>
+                <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow">
+                  <% if (doc.file_type.startsWith('image/')) { %>
+                    <img src="<%= doc.file_url %>" alt="Dokumentasi" class="w-full h-48 object-cover rounded-md" />
+                  <% } else if (doc.file_type.startsWith('video/')) { %>
+                    <video controls class="w-full h-48 rounded-md">
+                      <source src="<%= doc.file_url %>" type="<%= doc.file_type %>" />
+                      Browser Anda tidak mendukung video.
+                    </video>
+                  <% } else { %>
+                    <a href="<%= doc.file_url %>" target="_blank" class="text-blue-600 underline font-semibold hover:text-blue-800 transition">
+                      Lihat Dokumentasi
+                    </a>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

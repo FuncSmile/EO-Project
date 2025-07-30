@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WhatsApp QR Code</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #2563eb;
+    }
+    #qr-code {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scan QR Code WhatsApp Web</h1>
+  <p>QR code akan muncul di bawah ini. Jika tidak muncul, silakan refresh halaman.</p>
+  <div id="qr-code"></div>
+
+  <script>
+    async function fetchQRCode() {
+      try {
+        const response = await fetch('/whatsapp_qr');
+        if (!response.ok) {
+          document.getElementById('qr-code').innerText = 'Gagal mendapatkan QR code: ' + response.statusText;
+          return;
+        }
+        const data = await response.json();
+        if (!data.qrImage) {
+          document.getElementById('qr-code').innerText = 'QR code kosong.';
+          return;
+        }
+        // Tampilkan gambar QR code
+        const img = document.createElement('img');
+        img.src = data.qrImage;
+        img.alt = 'WhatsApp QR Code';
+        img.width = 256;
+        img.height = 256;
+        const qrCodeDiv = document.getElementById('qr-code');
+        qrCodeDiv.innerHTML = '';
+        qrCodeDiv.appendChild(img);
+      } catch (error) {
+        document.getElementById('qr-code').innerText = 'Error: ' + error.message;
+      }
+    }
+
+    // Fetch QR code on page load
+    fetchQRCode();
+  </script>
+</body>
+</html>

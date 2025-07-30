@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="./public/output.css" />
+  </head>
+  <body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+      <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto flex justify-between items-center p-4">
+          <h1 class="text-3xl font-bold">Event Organizer</h1>
+          <a href="/login" class="bg-white text-blue-600 px-4 py-2 rounded-md font-semibold hover:bg-gray-100 transition">Login</a>
+        </div>
+      </header>
+      <main class="container mx-auto flex-grow p-6">
+        <section class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold mb-4">Members Page</h2>
+          <p class="text-gray-600 mb-6">This is the home page of the application.</p>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm font-light">
+              <thead class="border-b border-gray-200 bg-gray-100">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-gray-700 uppercase tracking-wider">Member Name</th>
+                  <th scope="col" class="px-6 py-3 text-gray-700 uppercase tracking-wider">Phone Number</th>
+                  <th scope="col" class="px-6 py-3 text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">John Doe</td>
+                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">+1 234 567 8901</td>
+                  <td class="px-6 py-4 space-x-2">
+                    <button class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition">Edit</button>
+                    <button class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition">Invite</button>
+                    <button class="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition">Event Reminder</button>
+                  </td>
+                </tr>
+                <tr class="border-b border-gray-200 hover:bg-gray-50 bg-gray-50">
+                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Jane Smith</td>
+                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">+1 987 654 3210</td>
+                  <td class="px-6 py-4 space-x-2">
+                    <button class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition">Edit</button>
+                    <button class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition">Invite</button>
+                    <button class="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition">Event Reminder</button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Alice Johnson</td>
+                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">+1 555 123 4567</td>
+                  <td class="px-6 py-4 space-x-2">
+                    <button class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition">Edit</button>
+                    <button class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition">Invite</button>
+                    <button class="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition">Event Reminder</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+      <footer class="bg-gray-100 text-center p-4 text-gray-600 border-t border-gray-300">
+        <p>&copy; 2023 My Ambition. All rights reserved.</p>
+      </footer>
+    </div>
+  </body>
+</html>
