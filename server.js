@@ -5,8 +5,12 @@ const querystring = require("querystring");
 const formidable = require("formidable");
 const db = require("./db/connection");
 const ejs = require("ejs");
-const { scheduleRundownReminders, clearScheduledJobs, client } = require("./whatsappReminder");
-const QRCode = require('qrcode');
+const {
+  scheduleRundownReminders,
+  clearScheduledJobs,
+  client,
+} = require("./whatsappReminder");
+const QRCode = require("qrcode");
 
 // Setup upload directory
 const uploadDir = path.join(__dirname, "uploads");
@@ -17,12 +21,12 @@ if (!fs.existsSync(uploadDir)) {
 let latestQRImage = null;
 
 // Listen to QR event and generate base64 image
-client.on('qr', async (qr) => {
-  console.log('QR RECEIVED', qr);
+client.on("qr", async (qr) => {
+  console.log("QR RECEIVED", qr);
   try {
     latestQRImage = await QRCode.toDataURL(qr);
   } catch (err) {
-    console.error('Error generating QR code image:', err);
+    console.error("Error generating QR code image:", err);
   }
 });
 
@@ -45,26 +49,27 @@ const server = http.createServer((req, res) => {
   } else if (req.method === "GET" && req.url === "/whatsapp_qr") {
     // Serve QR code image as base64
     if (latestQRImage) {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ qrImage: latestQRImage }));
     } else {
       res.writeHead(504);
-      res.end(JSON.stringify({ error: 'QR code not available' }));
+      res.end(JSON.stringify({ error: "QR code not available" }));
     }
   } else if (req.method === "GET" && req.url === "/whatsapp_qr_page") {
     // Serve the QR code page
-    fs.readFile(path.join(__dirname, "views", "whatsappQR.ejs"), "utf8", (err, data) => {
-      if (err) {
-        res.writeHead(500);
-        return res.end("Error loading WhatsApp QR page");
+    fs.readFile(
+      path.join(__dirname, "views", "whatsappQR.ejs"),
+      "utf8",
+      (err, data) => {
+        if (err) {
+          res.writeHead(500);
+          return res.end("Error loading WhatsApp QR page");
+        }
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(data);
       }
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.end(data);
-    });
-  }
-
-  // Routing POST /login
-  else if (req.method === "POST" && req.url === "/login") {
+    );
+  } else if (req.method === "POST" && req.url === "/login") {
     // Keep this for fallback or remove if not needed
     let body = "";
     req.on("data", (chunk) => {
@@ -91,10 +96,7 @@ const server = http.createServer((req, res) => {
         );
       }
     });
-  }
-
-  // New API endpoint for AJAX login
-  else if (req.method === "POST" && req.url === "/api/login") {
+  } else if (req.method === "POST" && req.url === "/api/login") {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk.toString();
@@ -122,10 +124,7 @@ const server = http.createServer((req, res) => {
         );
       }
     });
-  }
-
-  // Routing GET /login
-  else if (req.method === "GET" && req.url === "/login") {
+  } else if (req.method === "GET" && req.url === "/login") {
     fs.readFile(
       path.join(__dirname, "views", "login.ejs"),
       "utf8",
@@ -235,8 +234,14 @@ const server = http.createServer((req, res) => {
           return res.end("Event not found");
         }
         const event = rows[0];
-        const [guestRows] = await db.query("SELECT * FROM guests WHERE event_id = ?", [eventId]);
-        const [docRows] = await db.query("SELECT * FROM documentation WHERE event_id = ?", [eventId]);
+        const [guestRows] = await db.query(
+          "SELECT * FROM guests WHERE event_id = ?",
+          [eventId]
+        );
+        const [docRows] = await db.query(
+          "SELECT * FROM documentation WHERE event_id = ?",
+          [eventId]
+        );
         fs.readFile(
           path.join(__dirname, "views", "lihatEvent.ejs"),
           "utf8",
@@ -245,7 +250,12 @@ const server = http.createServer((req, res) => {
               res.writeHead(500);
               return res.end("Error loading lihatEvent.ejs");
             }
-            const rendered = ejs.render(data, { title: "Detail Event", event, guests: guestRows, documentation: docRows });
+            const rendered = ejs.render(data, {
+              title: "Detail Event",
+              event,
+              guests: guestRows,
+              documentation: docRows,
+            });
             res.writeHead(200, { "Content-Type": "text/html" });
             res.end(rendered);
           }
@@ -375,23 +385,41 @@ const server = http.createServer((req, res) => {
     const eventId = req.url.split("/")[2];
     (async () => {
       try {
-        const [eventRows] = await db.query("SELECT * FROM events WHERE id = ?", [eventId]);
+        const [eventRows] = await db.query(
+          "SELECT * FROM events WHERE id = ?",
+          [eventId]
+        );
         if (eventRows.length === 0) {
           res.writeHead(404);
           return res.end("Event not found");
         }
         const event = eventRows[0];
-        const [guestRows] = await db.query("SELECT * FROM guests WHERE event_id = ?", [eventId]);
-        const [docRows] = await db.query("SELECT * FROM documentation WHERE event_id = ?", [eventId]);
-        fs.readFile(path.join(__dirname, "views", "manageEvent.ejs"), "utf8", (err, data) => {
-          if (err) {
-            res.writeHead(500);
-            return res.end("Error loading manageEvent.ejs");
+        const [guestRows] = await db.query(
+          "SELECT * FROM guests WHERE event_id = ?",
+          [eventId]
+        );
+        const [docRows] = await db.query(
+          "SELECT * FROM documentation WHERE event_id = ?",
+          [eventId]
+        );
+        fs.readFile(
+          path.join(__dirname, "views", "manageEvent.ejs"),
+          "utf8",
+          (err, data) => {
+            if (err) {
+              res.writeHead(500);
+              return res.end("Error loading manageEvent.ejs");
+            }
+            const rendered = ejs.render(data, {
+              title: "Kelola Acara",
+              event,
+              guests: guestRows,
+              documentation: docRows,
+            });
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(rendered);
           }
-          const rendered = ejs.render(data, { title: "Kelola Acara", event, guests: guestRows, documentation: docRows });
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(rendered);
-        });
+        );
       } catch (error) {
         res.writeHead(500);
         res.end("Error loading manage event: " + error.message);
@@ -401,21 +429,27 @@ const server = http.createServer((req, res) => {
     const eventId = req.url.split("/")[2];
     (async () => {
       try {
-        const [rows] = await db.query("SELECT * FROM events WHERE id = ?", [eventId]);
+        const [rows] = await db.query("SELECT * FROM events WHERE id = ?", [
+          eventId,
+        ]);
         if (rows.length === 0) {
           res.writeHead(404);
           return res.end("Event not found");
         }
         const event = rows[0];
-        fs.readFile(path.join(__dirname, "views", "eventList.ejs"), "utf8", (err, data) => {
-          if (err) {
-            res.writeHead(500);
-            return res.end("Error loading eventList.ejs");
+        fs.readFile(
+          path.join(__dirname, "views", "eventList.ejs"),
+          "utf8",
+          (err, data) => {
+            if (err) {
+              res.writeHead(500);
+              return res.end("Error loading eventList.ejs");
+            }
+            const rendered = ejs.render(data, { title: "Event List", event });
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(rendered);
           }
-          const rendered = ejs.render(data, { title: "Event List", event });
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(rendered);
-        });
+        );
       } catch (error) {
         res.writeHead(500);
         res.end("Error loading event list: " + error.message);
@@ -425,8 +459,13 @@ const server = http.createServer((req, res) => {
     const eventId = req.url.split("/")[2];
     (async () => {
       try {
-        const [rundowns] = await db.query("SELECT * FROM rundown WHERE event_id = ? ORDER BY jam ASC", [eventId]);
-        const [events] = await db.query("SELECT * FROM events WHERE id = ?", [eventId]);
+        const [rundowns] = await db.query(
+          "SELECT * FROM rundown WHERE event_id = ? ORDER BY jam ASC",
+          [eventId]
+        );
+        const [events] = await db.query("SELECT * FROM events WHERE id = ?", [
+          eventId,
+        ]);
         if (events.length === 0) {
           res.writeHead(404);
           return res.end("Event not found");
@@ -440,7 +479,11 @@ const server = http.createServer((req, res) => {
               res.writeHead(500);
               return res.end("Error loading rundownList.ejs");
             }
-            const rendered = ejs.render(data, { title: "Rundown List", event, rundowns });
+            const rendered = ejs.render(data, {
+              title: "Rundown List",
+              event,
+              rundowns,
+            });
             res.writeHead(200, { "Content-Type": "text/html" });
             res.end(rendered);
           }
@@ -461,8 +504,15 @@ const server = http.createServer((req, res) => {
         try {
           const formData = querystring.parse(body);
           const { kegiatan, tempat, jam, pembawa_acara } = formData;
-          const sql = "INSERT INTO rundown (event_id, kegiatan, tempat, jam, pembawa_acara) VALUES (?, ?, ?, ?, ?)";
-          await db.execute(sql, [eventId, kegiatan, tempat, jam, pembawa_acara]);
+          const sql =
+            "INSERT INTO rundown (event_id, kegiatan, tempat, jam, pembawa_acara) VALUES (?, ?, ?, ?, ?)";
+          await db.execute(sql, [
+            eventId,
+            kegiatan,
+            tempat,
+            jam,
+            pembawa_acara,
+          ]);
           // Reset and reschedule reminders after adding rundown
           clearScheduledJobs();
           await scheduleRundownReminders();
@@ -474,52 +524,70 @@ const server = http.createServer((req, res) => {
         }
       })();
     });
-  } else if (req.method === "POST" && req.url.startsWith("/edit_rundown/")) {
+  } else if (req.method === "GET" && req.url.startsWith("/edit_rundown/")) {
+    const rundownId = req.url.split("/")[2];
+    (async () => {
+      try {
+        const [rows] = await db.query("SELECT * FROM rundown WHERE id = ?", [
+          rundownId,
+        ]);
+        if (rows.length === 0) {
+          res.writeHead(404);
+          return res.end("Event not found");
+        }
+        const rundown = rows[0];
+        fs.readFile(
+          path.join(__dirname, "views", "editRundown.ejs"),
+          "utf8",
+          (err, data) => {
+            if (err) {
+              res.writeHead(500);
+              return res.end("Error loading editRundown.ejs");
+            }
+            const rendered = ejs.render(data, { title: "Edit rundown", rundown });
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(rendered);
+          }
+        );
+      } catch (error) {
+        res.writeHead(500);
+        res.end("Error loading rundown: " + error.message);
+      }
+    })();
+  } 
+   else if (req.method === "POST" && req.url.startsWith("/edit_rundown/")) {
+    (async () => {
     const rundownId = req.url.split("/")[2];
     let body = "";
-    req.on("data", (chunk) => {
-      body += chunk.toString();
+    req.on("data", chunk => body += chunk.toString());
+    req.on("end", async () => {
+      try {
+        const formData = querystring.parse(body);
+        const { kegiatan, tempat, jam, pembawa_acara } = formData;
+        await db.execute(
+          "UPDATE rundown SET kegiatan=?, tempat=?, jam=?, pembawa_acara=? WHERE id=?",
+          [kegiatan, tempat, jam, pembawa_acara, rundownId]
+        );
+        const [rows] = await db.query("SELECT event_id FROM rundown WHERE id=?", [rundownId]);
+        const eventId = rows[0].event_id;
+        res.writeHead(302, { Location: `/rundown_list/${eventId}` });
+        res.end();
+      } catch (error) {
+        res.writeHead(500);
+        res.end("Error editing rundown: " + error.message);
+      }
     });
-    req.on("end", () => {
-      (async () => {
-        try {
-          const formData = querystring.parse(body);
-          const { kegiatan, tempat, jam, pembawa_acara } = formData;
-          const sql = "UPDATE rundown SET kegiatan = ?, tempat = ?, jam = ?, pembawa_acara = ? WHERE id = ?";
-          await db.execute(sql, [kegiatan, tempat, jam, pembawa_acara, rundownId]);
-          // Reset and reschedule reminders after editing rundown
-          clearScheduledJobs();
-          await scheduleRundownReminders();
-          // Get event_id for redirect
-          const [rows] = await db.query("SELECT event_id FROM rundown WHERE id = ?", [rundownId]);
-          if (rows.length === 0) {
-            res.writeHead(404);
-            return res.end("Rundown not found");
-          }
-          const eventId = rows[0].event_id;
-          res.writeHead(302, { Location: `/rundown_list/${eventId}` });
-          res.end();
-        } catch (error) {
-          res.writeHead(500);
-          res.end("Error editing rundown: " + error.message);
-        }
-      })();
-    });
+  })();
   } else if (req.method === "POST" && req.url.startsWith("/delete_rundown/")) {
     const rundownId = req.url.split("/")[2];
     (async () => {
       try {
-        // Get event_id for redirect
-        const [rows] = await db.query("SELECT event_id FROM rundown WHERE id = ?", [rundownId]);
-        if (rows.length === 0) {
-          res.writeHead(404);
-          return res.end("Rundown not found");
-        }
+        const [rows] = await db.query(
+          "SELECT event_id FROM rundown WHERE id=?",
+          [rundownId]
+        );
         const eventId = rows[0].event_id;
-        await db.execute("DELETE FROM rundown WHERE id = ?", [rundownId]);
-        // Reset and reschedule reminders after deleting rundown
-        clearScheduledJobs();
-        await scheduleRundownReminders();
+        await db.execute("DELETE FROM rundown WHERE id=?", [rundownId]);
         res.writeHead(302, { Location: `/rundown_list/${eventId}` });
         res.end();
       } catch (error) {
@@ -532,7 +600,10 @@ const server = http.createServer((req, res) => {
     (async () => {
       try {
         // Get event_id for redirect
-        const [rows] = await db.query("SELECT event_id FROM guests WHERE id = ?", [guestId]);
+        const [rows] = await db.query(
+          "SELECT event_id FROM guests WHERE id = ?",
+          [guestId]
+        );
         if (rows.length === 0) {
           res.writeHead(404);
           return res.end("Guest not found");
@@ -558,17 +629,22 @@ const server = http.createServer((req, res) => {
         const { name, email, phone, photoBase64 } = data;
         let photoUrl = null;
         if (photoBase64) {
-          const matches = photoBase64.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+          const matches = photoBase64.match(
+            /^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/
+          );
           if (matches) {
             const ext = matches[1];
-            const buffer = Buffer.from(matches[2], 'base64');
-            const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.${ext}`;
+            const buffer = Buffer.from(matches[2], "base64");
+            const filename = `${Date.now()}-${Math.round(
+              Math.random() * 1e9
+            )}.${ext}`;
             const filepath = path.join(uploadDir, filename);
             fs.writeFileSync(filepath, buffer);
             photoUrl = `/uploads/${filename}`;
           }
         }
-        const sql = "INSERT INTO guests (event_id, name, email, phone, photo_url) VALUES (?, ?, ?, ?, ?)";
+        const sql =
+          "INSERT INTO guests (event_id, name, email, phone, photo_url) VALUES (?, ?, ?, ?, ?)";
         await db.execute(sql, [eventId, name, email, phone, photoUrl]);
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ success: true }));
@@ -581,7 +657,7 @@ const server = http.createServer((req, res) => {
     const eventId = req.url.split("/")[2];
     // Handle JSON upload from fetch with base64 file data
     let body = "";
-    req.on("data", chunk => {
+    req.on("data", (chunk) => {
       body += chunk.toString();
     });
     req.on("end", async () => {
@@ -593,19 +669,24 @@ const server = http.createServer((req, res) => {
           return res.end("No documentation file data provided");
         }
         // Decode base64 file
-        const matches = fileBase64.match(/^data:([a-zA-Z0-9\/\-\+\.]+);base64,(.+)$/);
+        const matches = fileBase64.match(
+          /^data:([a-zA-Z0-9\/\-\+\.]+);base64,(.+)$/
+        );
         if (!matches) {
           res.writeHead(400);
           return res.end("Invalid documentation file data");
         }
         const ext = path.extname(fileName) || "";
-        const buffer = Buffer.from(matches[2], 'base64');
-        const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+        const buffer = Buffer.from(matches[2], "base64");
+        const filename = `${Date.now()}-${Math.round(
+          Math.random() * 1e9
+        )}${ext}`;
         const filepath = path.join(uploadDir, filename);
         fs.writeFileSync(filepath, buffer);
         const file_url = `/uploads/${filename}`;
         const file_type = fileType || matches[1] || "application/octet-stream";
-        const sql = "INSERT INTO documentation (event_id, file_url, file_type) VALUES (?, ?, ?)";
+        const sql =
+          "INSERT INTO documentation (event_id, file_url, file_type) VALUES (?, ?, ?)";
         await db.execute(sql, [eventId, file_url, file_type]);
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ success: true }));
@@ -614,7 +695,7 @@ const server = http.createServer((req, res) => {
         res.end("Error saving documentation: " + error.message);
       }
     });
-  } else if (req.method === "POST" && req.url.startsWith("/api/send_rundown_reminders/")) {
+  } else if ( req.method === "POST" && req.url.startsWith("/api/send_rundown_reminders/") ) {
     const eventId = req.url.split("/")[2];
     (async () => {
       try {
@@ -627,9 +708,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ success: false, message: error.message }));
       }
     })();
-  }
-  // Routing static files for /public
-  else if (req.url.startsWith("/public")) {
+  } else if (req.url.startsWith("/public")) {
     const filePath = path.join(__dirname, req.url);
     fs.readFile(filePath, (err, data) => {
       if (err) {
@@ -639,9 +718,7 @@ const server = http.createServer((req, res) => {
       res.writeHead(200);
       res.end(data);
     });
-  }
-  // Routing static files for /uploads
-  else if (req.url.startsWith("/uploads")) {
+  } else if (req.url.startsWith("/uploads")) {
     const filePath = path.join(__dirname, req.url);
     fs.readFile(filePath, (err, data) => {
       if (err) {

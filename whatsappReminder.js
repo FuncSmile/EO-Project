@@ -64,7 +64,8 @@ const waitForClientReady = (timeoutMs = 10000) => {
   return new Promise((resolve, reject) => {
     if (clientReady) return resolve();
     const timeout = setTimeout(
-      () => reject(new Error("Timeout waiting for WhatsApp client to be ready")),
+      () =>
+        reject(new Error("Timeout waiting for WhatsApp client to be ready")),
       timeoutMs
     );
     const interval = setInterval(() => {
@@ -109,6 +110,7 @@ Kami informasikan bahwa Anda terdaftar sebagai tamu dalam acara berikut:
 📛 *${rundown.event_name}*  
 📌 Kegiatan: ${rundown.kegiatan}  
 📍 Tempat: ${rundown.tempat}  
+🗓️ Tanggal: ${rundown.tanggal}  
 🕒 Waktu: ${rundown.jam}  
 🎙️ Pembawa Acara: ${rundown.pembawa_acara}
 
@@ -134,15 +136,23 @@ Terima kasih. 🙏`;
             console.warn(`Chat belum ada, lanjut kirim ke: ${chatId}`);
           }
 
-          const sendMessageWithRetry = async (id, msg, retries = 5, delay = 2000) => {
+          const sendMessageWithRetry = async (
+            id,
+            msg,
+            retries = 5,
+            delay = 2000
+          ) => {
             for (let i = 1; i <= retries; i++) {
               try {
                 await client.sendMessage(id, msg);
-                console.log(`Reminder terkirim ke ${rundown.guest_name} (${rundown.guest_phone})`);
+                console.log(
+                  `Reminder terkirim ke ${rundown.guest_name} (${rundown.guest_phone})`
+                );
                 return;
               } catch (err) {
                 console.warn(`Gagal kirim ke ${id} attempt ${i}:`, err.message);
-                if (i < retries) await new Promise((res) => setTimeout(res, delay * i));
+                if (i < retries)
+                  await new Promise((res) => setTimeout(res, delay * i));
               }
             }
           };

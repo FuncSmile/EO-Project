@@ -11,8 +11,8 @@
       <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
         <div class="container mx-auto flex justify-between items-center p-5">
           <h1 class="text-3xl font-extrabold tracking-tight drop-shadow-lg">Rundown List for <%= event.name %></h1>
-          <button id="send-reminders-btn" class="bg-blue-600 hover:bg-blue-700 transition text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg">
-            Kirim Pengingat WhatsApp Rundown
+          <button onclick="window.location= '/dashboard'" class="bg-blue-600 hover:bg-blue-700 transition text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg">
+            Kembali ke Dashboard
           </button>
         </div>
       </header>
@@ -53,7 +53,8 @@
                   <th class="py-3 px-6 rounded-tl-lg">Kegiatan</th>
                   <th class="py-3 px-6">Tempat</th>
                   <th class="py-3 px-6">Jam</th>
-                  <th class="py-3 px-6 rounded-tr-lg">Pembawa Acara</th>
+                  <th class="py-3 px-6">Pembawa Acara</th>
+                  <th class="py-3 px-6 rounded-tr-lg">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,6 +64,12 @@
                     <td class="py-4 px-6"><%= rundown.tempat %></td>
                     <td class="py-4 px-6"><%= rundown.jam %></td>
                     <td class="py-4 px-6"><%= rundown.pembawa_acara %></td>
+                    <td class="py-4 px-6 flex gap-2">
+                    <a href="/edit_rundown/<%= rundown.id %>" class="text-blue-600 hover:underline font-semibold">Edit</a>
+                    <form method="POST" action="/delete_rundown/<%= rundown.id %>" onsubmit="return confirm('Yakin mau hapus rundown ini?');">
+                      <button type="submit" class="text-red-600 hover:underline font-semibold">Hapus</button>
+                    </form>
+                  </td>
                   </tr>
                 <% }) %>
               </tbody>
@@ -75,32 +82,7 @@
         <p>&copy; 2023 My Ambition. All rights reserved.</p>
       </footer>
 
-      <script>
-        document.getElementById('send-reminders-btn').addEventListener('click', async () => {
-          const btn = document.getElementById('send-reminders-btn');
-          const status = document.getElementById('reminder-status');
-          const error = document.getElementById('reminder-error');
-          btn.disabled = true;
-          status.classList.add('hidden');
-          error.classList.add('hidden');
 
-          try {
-            const response = await fetch('/api/send_rundown_reminders/<%= event.id %>', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-              status.classList.remove('hidden');
-            } else {
-              error.classList.remove('hidden');
-            }
-          } catch (e) {
-            error.classList.remove('hidden');
-          } finally {
-            btn.disabled = false;
-          }
-        });
-      </script>
     </main>
   </body>
 </html>
