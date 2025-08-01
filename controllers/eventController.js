@@ -325,6 +325,46 @@ async function eventList(req, res) {
   }
 }
 
+async function documentationPage(req, res) {
+  const eventId = req.url.split("/")[2];
+  try {
+    const [eventRows] = await db.query("SELECT * FROM events WHERE id = ?", [
+      eventId,
+    ]);
+    if (eventRows.length === 0) {
+      res.writeHead(404);
+      return res.end("Event not found");
+    }
+    const event = eventRows[0];
+    const [docRows] = await db.query(
+      "SELECT * FROM documentation WHERE event_id = ?",
+      [eventId]
+    );
+    const fs = require("fs");
+    const path = require("path");
+    const data = await new Promise((resolve, reject) => {
+      fs.readFile(
+        path.join(__dirname, "..", "views", "documentationPage.ejs"),
+        "utf8",
+        (err, data) => {
+          if (err) reject(err);
+          else resolve(data);
+        }
+      );
+    });
+    const rendered = ejs.render(data, {
+      title: "Dokumentasi Acara",
+      event,
+      documentation: docRows,
+    });
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(rendered);
+  } catch (error) {
+    res.writeHead(500);
+    res.end("Error loading documentation page: " + error.message);
+  }
+}
+
 module.exports = {
   dashboard,
   membersPage,
@@ -336,4 +376,5 @@ module.exports = {
   seeEvent,
   manageEvent,
   eventList,
+  documentationPage,
 };

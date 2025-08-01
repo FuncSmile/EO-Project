@@ -34,7 +34,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <script>
       const qrCodeContainer = document.getElementById('qrcode');
-      const urlToEncode = window.location.href;
+      const urlToEncode = `${window.location.origin}/documentation/<%= event.id %>`;
       QRCode.toCanvas(urlToEncode, { width: 180 }, function (error, canvas) {
         if (error) console.error(error);
         qrCodeContainer.appendChild(canvas);

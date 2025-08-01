@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dokumentasi Acara - <%= event.name %></title>
+    <link href="/public/output.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+    <header class="bg-white shadow-md p-6">
+      <h1 class="text-4xl font-extrabold text-center text-gray-900">
+        Dokumentasi Acara: <%= event.name %>
+      </h1>
+    </header>
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+      <section>
+        <h2 class="text-3xl font-extrabold text-gray-900 mb-6 border-b-4 border-blue-600 pb-3">
+          Dokumentasi yang Telah Diunggah
+        </h2>
+        <div
+          id="documentation-list"
+          class="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-7xl mx-auto"
+        >
+          <% documentation.forEach(doc => { %>
+          <div
+            class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow relative"
+          >
+            <% if (doc.file_type.startsWith('image/')) { %>
+            <img
+              src="<%= doc.file_url %>"
+              alt="Dokumentasi"
+              class="w-full h-40 object-cover rounded-md cursor-pointer"
+              data-doc-url="<%= doc.file_url %>"
+              onclick="openDocModal(this)"
+            />
+            <a
+              href="<%= doc.file_url %>"
+              download
+              class="mt-2 inline-block px-3 py-1 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              aria-label="Download Dokumentasi"
+            >
+              Download Foto
+            </a>
+            <% } else if (doc.file_type.startsWith('video/')) { %>
+            <video controls class="w-full h-40 rounded-md">
+              <source src="<%= doc.file_url %>" type="<%= doc.file_type %>" />
+              Browser Anda tidak mendukung video.
+            </video>
+            <% } else { %>
+            <a
+              href="<%= doc.file_url %>"
+              target="_blank"
+              class="text-blue-600 underline font-medium hover:text-blue-800 transition"
+            >
+              Lihat Dokumentasi
+            </a>
+            <% } %>
+            <form
+              action="/delete_documentation/<%= doc.id %>"
+              method="POST"
+              onsubmit="return confirmDelete(event, this);"
+              class="absolute top-2 right-2"
+            >
+            </form>
+          </div>
+          <% }) %>
+        </div>
+
+        <!-- Documentation Image Modal -->
+        <div id="doc-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+          <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full p-4 relative">
+            <button id="close-doc-modal" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">&times;</button>
+            <img id="doc-modal-img" src="" alt="Dokumentasi" class="max-h-[80vh] mx-auto rounded-md" />
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer
+      class="bg-white text-center p-6 text-gray-500 text-sm border-t border-gray-200"
+    >
+      &copy; 2024 Event Management
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      function confirmDelete(event, form) {
+        event.preventDefault();
+        Swal.fire({
+          title: "Apakah Anda yakin?",
+          text: "Data dokumentasi akan dihapus permanen!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#dc2626",
+          cancelButtonColor: "#6b7280",
+          confirmButtonText: "Ya, hapus!",
+          cancelButtonText: "Batal",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            form.submit();
+          }
+        });
+        return false;
+      }
+    </script>
+
+    <script>
+      // Documentation modal open and close functions
+      const docModal = document.getElementById('doc-modal');
+      const docModalImg = document.getElementById('doc-modal-img');
+      const closeDocModalBtn = document.getElementById('close-doc-modal');
+
+      function openDocModal(imgElem) {
+        const url = imgElem.getAttribute('data-doc-url');
+        docModalImg.src = url;
+        docModal.classList.remove('hidden');
+      }
+
+      closeDocModalBtn.addEventListener('click', () => {
+        docModal.classList.add('hidden');
+        docModalImg.src = '';
+      });
+
+      // Close modal on clicking outside the image
+      docModal.addEventListener('click', (e) => {
+        if (e.target === docModal) {
+          docModal.classList.add('hidden');
+          docModalImg.src = '';
+        }
+      });
+    </script>
+  </body>
+</html>

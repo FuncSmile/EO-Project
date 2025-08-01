@@ -91,6 +91,11 @@ const server = http.createServer((req, res) => {
     guestController.addGuest(req, res);
   } else if (method === "POST" && url.startsWith("/upload_documentation/")) {
     documentationController.uploadDocumentation(req, res);
+  } else if (method === "POST" && url.startsWith("/delete_documentation/")) {
+    documentationController.deleteDocumentation(req, res);
+  } else if (method === "GET" && url.startsWith("/documentation/")) {
+    const eventController = require("./controllers/eventController");
+    eventController.documentationPage(req, res);
   } else if (
     method === "POST" &&
     url.startsWith("/api/send_rundown_reminders/")

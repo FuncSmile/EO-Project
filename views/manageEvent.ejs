@@ -239,14 +239,24 @@
         >
           <% documentation.forEach(doc => { %>
           <div
-            class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow"
+            class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow relative"
           >
             <% if (doc.file_type.startsWith('image/')) { %>
             <img
               src="<%= doc.file_url %>"
               alt="Dokumentasi"
-              class="w-full h-40 object-cover rounded-md"
+              class="w-full h-40 object-cover rounded-md cursor-pointer"
+              data-doc-url="<%= doc.file_url %>"
+              onclick="openDocModal(this)"
             />
+            <a
+              href="<%= doc.file_url %>"
+              download
+              class="mt-2 inline-block px-3 py-1 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              aria-label="Download Dokumentasi"
+            >
+              Download Foto
+            </a>
             <% } else if (doc.file_type.startsWith('video/')) { %>
             <video controls class="w-full h-40 rounded-md">
               <source src="<%= doc.file_url %>" type="<%= doc.file_type %>" />
@@ -261,8 +271,30 @@
               Lihat Dokumentasi
             </a>
             <% } %>
+            <form
+              action="/delete_documentation/<%= doc.id %>"
+              method="POST"
+              onsubmit="return confirmDelete(event, this);"
+              class="absolute top-2 right-2"
+            >
+              <button
+                type="submit"
+                class="inline-block px-3 py-1 bg-red-600 text-white rounded-md shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+                aria-label="Hapus Dokumentasi"
+              >
+                Hapus
+              </button>
+            </form>
           </div>
           <% }) %>
+        </div>
+
+        <!-- Documentation Image Modal -->
+        <div id="doc-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+          <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full p-4 relative">
+            <button id="close-doc-modal" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">&times;</button>
+            <img id="doc-modal-img" src="" alt="Dokumentasi" class="max-h-[80vh] mx-auto rounded-md" />
+          </div>
         </div>
       </section>
     </main>
@@ -305,18 +337,36 @@
           });
           if (!response.ok) {
             const text = await response.text();
-            alert('Upload gagal: ' + text);
+            Swal.fire({
+              icon: 'error',
+              title: 'Upload gagal',
+              text: text,
+            });
             return;
           }
           const result = await response.json();
           if (result.success) {
-            alert('Upload berhasil');
-            window.location.reload();
+            Swal.fire({
+              icon: 'success',
+              title: 'Upload berhasil',
+              showConfirmButton: false,
+              timer: 1500
+            }).then(() => {
+              window.location.reload();
+            });
           } else {
-            alert('Upload gagal');
+            Swal.fire({
+              icon: 'error',
+              title: 'Upload gagal',
+              text: 'Terjadi kesalahan saat mengupload dokumentasi.',
+            });
           }
         } catch (error) {
-          alert('Terjadi kesalahan: ' + error.message);
+          Swal.fire({
+            icon: 'error',
+            title: 'Terjadi kesalahan',
+            text: error.message,
+          });
         }
       });
     </script>
@@ -335,6 +385,7 @@
             Anda diundang untuk menghadiri acara kami. Silakan scan QR code di atas untuk konfirmasi kehadiran dan informasi lebih lanjut.
           </p>
           <button id="print-invitation" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-semibold shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-400">Cetak Undangan</button>
+          <button id="download-qr" class="ml-4 bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition font-semibold shadow-lg focus:outline-none focus:ring-4 focus:ring-green-400">Download QR Code</button>
         </div>
       </div>
     </div>
@@ -402,6 +453,57 @@
             // window.location.reload();
           };
         }, 300);
+      });
+
+      // Download QR code as image
+      const downloadQRBtn = document.getElementById('download-qr');
+      downloadQRBtn.addEventListener('click', () => {
+        const canvas = document.getElementById('qrcode-canvas');
+        const imgDataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = imgDataUrl;
+        // Use the URL encoded in the QR code to generate filename
+        const qrUrl = canvas.getAttribute('data-qr-url') || '';
+        let filename = 'qr-code.png';
+        if (qrUrl) {
+          try {
+            const urlObj = new URL(qrUrl);
+            const pathname = urlObj.pathname.replace(/\//g, '-').replace(/^-|-$/g, '');
+            filename = `qr-${pathname || 'code'}.png`;
+          } catch {
+            // fallback filename
+          }
+        }
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    </script>
+
+    <script>
+      // Documentation modal open and close functions
+      const docModal = document.getElementById('doc-modal');
+      const docModalImg = document.getElementById('doc-modal-img');
+      const closeDocModalBtn = document.getElementById('close-doc-modal');
+
+      function openDocModal(imgElem) {
+        const url = imgElem.getAttribute('data-doc-url');
+        docModalImg.src = url;
+        docModal.classList.remove('hidden');
+      }
+
+      closeDocModalBtn.addEventListener('click', () => {
+        docModal.classList.add('hidden');
+        docModalImg.src = '';
+      });
+
+      // Close modal on clicking outside the image
+      docModal.addEventListener('click', (e) => {
+        if (e.target === docModal) {
+          docModal.classList.add('hidden');
+          docModalImg.src = '';
+        }
       });
     </script>
 </create_file>

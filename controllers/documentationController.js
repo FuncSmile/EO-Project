@@ -38,6 +38,41 @@ async function uploadDocumentation(req, res) {
   });
 }
 
+async function deleteDocumentation(req, res) {
+  // Fix: parse docId from URL path instead of req.params.id because no router middleware is used
+  const urlParts = req.url.split("/");
+  const docId = urlParts[urlParts.length - 1];
+  try {
+    // We need to get event_id for the documentation before deleting it
+    // So query event_id first before deleting
+    const [rows] = await db.execute("SELECT event_id FROM documentation WHERE id = ?", [docId]);
+    let eventId = null;
+    if (rows.length > 0) {
+      eventId = rows[0].event_id;
+    }
+    if (!eventId) {
+      // If eventId not found, redirect to dashboard as fallback
+      res.writeHead(302, { Location: "/dashboard" });
+      res.end();
+      return;
+    }
+    // Delete the documentation record from the database
+    const sql = "DELETE FROM documentation WHERE id = ?";
+    const [result] = await db.execute(sql, [docId]);
+    if (result.affectedRows === 0) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Documentation not found");
+      return;
+    }
+    res.writeHead(302, { Location: `/manage_event/${eventId}` });
+    res.end();
+  } catch (error) { 
+    res.writeHead(500, { "Content-Type": "text/plain" });
+    res.end("Error deleting documentation: " + error.message);
+  }
+}
+
 module.exports = {
   uploadDocumentation,
+  deleteDocumentation,
 };
