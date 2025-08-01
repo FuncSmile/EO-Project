@@ -1,0 +1,65 @@
+<section>
+  <h2 class="text-3xl font-extrabold text-gray-900 mb-6 border-b-4 border-blue-600 pb-3">
+    Upload Dokumentasi
+  </h2>
+  <form
+    id="upload-doc-form"
+    action="/upload_documentation/<%= event.id %>"
+    method="POST"
+    enctype="multipart/form-data"
+    class="space-y-6 max-w-md mx-auto bg-white p-6 rounded-lg shadow-md"
+  >
+    <div>
+      <label
+        for="documentation"
+        class="block mb-2 font-semibold text-gray-700"
+        >Pilih File Dokumentasi</label
+      >
+      <input
+        type="file"
+        id="documentation"
+        name="documentation"
+        accept="image/*,video/*,application/pdf"
+        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        required
+      />
+    </div>
+    <button
+      type="submit"
+      class="w-full bg-blue-600 text-white font-semibold py-3 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+    >
+      Upload
+    </button>
+  </form>
+  <div
+    id="documentation-list"
+    class="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-7xl mx-auto"
+  >
+    <% documentation.forEach(doc => { %>
+    <div
+      class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow"
+    >
+      <% if (doc.file_type.startsWith('image/')) { %>
+      <img
+        src="<%= doc.file_url %>"
+        alt="Dokumentasi"
+        class="w-full h-40 object-cover rounded-md"
+      />
+      <% } else if (doc.file_type.startsWith('video/')) { %>
+      <video controls class="w-full h-40 rounded-md">
+        <source src="<%= doc.file_url %>" type="<%= doc.file_type %>" />
+        Browser Anda tidak mendukung video.
+      </video>
+      <% } else { %>
+      <a
+        href="<%= doc.file_url %>"
+        target="_blank"
+        class="text-blue-600 underline font-medium hover:text-blue-800 transition"
+      >
+        Lihat Dokumentasi
+      </a>
+      <% } %>
+    </div>
+    <% }) %>
+  </div>
+</section>

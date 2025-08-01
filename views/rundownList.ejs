@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= title %></title>
     <link href="/public/output.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     <main class="min-h-screen flex flex-col">
@@ -66,7 +67,7 @@
                     <td class="py-4 px-6"><%= rundown.pembawa_acara %></td>
                     <td class="py-4 px-6 flex gap-2">
                     <a href="/edit_rundown/<%= rundown.id %>" class="text-blue-600 hover:underline font-semibold">Edit</a>
-                    <form method="POST" action="/delete_rundown/<%= rundown.id %>" onsubmit="return confirm('Yakin mau hapus rundown ini?');">
+                    <form method="POST" action="/delete_rundown/<%= rundown.id %>">
                       <button type="submit" class="text-red-600 hover:underline font-semibold">Hapus</button>
                     </form>
                   </td>
@@ -82,6 +83,26 @@
         <p>&copy; 2023 My Ambition. All rights reserved.</p>
       </footer>
 
+    <script>
+      document.querySelectorAll('form[action^="/delete_rundown/"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          Swal.fire({
+            title: 'Yakin mau hapus rundown ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              form.submit();
+            }
+          });
+        });
+      });
+    </script>
 
     </main>
   </body>

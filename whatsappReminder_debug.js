@@ -28,7 +28,7 @@ client.on("qr", async (qr) => {
   console.log("QR RECEIVED:", qr);
   try {
     latestQRImage = await QRCode.toDataURL(qr);
-    console.log("QR code base64 image updated in whatsappReminder.js");
+    console.log("QR code base64 image updated in whatsappReminder_debug.js");
     // Print QR code in terminal as image
     const terminalQRCode = require("qrcode-terminal");
     terminalQRCode.generate(qr, { small: true });
@@ -92,30 +92,48 @@ const waitForClientReady = (timeoutMs = 10000) => {
 };
 
 async function scheduleRundownReminders() {
+  console.log("scheduleRundownReminders called");
   clearScheduledJobs();
   try {
     const [rundowns] = await db.query(`
-      SELECT r.id AS rundown_id, r.event_id, r.kegiatan, r.tempat, r.jam, r.pembawa_acara,
+      SELECT r.id AS rundown_id, r.event_id, r.kegiatan, r.tempat, r.jam, r.pembawa_acara, r.tanggal,
              g.name AS guest_name, g.phone AS guest_phone,
-             e.name AS event_name
+             e.name AS event_name, e.date AS date
       FROM rundown r
       JOIN guests g ON r.event_id = g.event_id
       JOIN events e ON r.event_id = e.id
     `);
 
+    console.log(`Found ${rundowns.length} rundowns`);
+
     const now = new Date();
 
     rundowns.forEach((rundown) => {
+      console.log(`Scheduling reminder for rundown ID ${rundown.rundown_id} at time ${rundown.jam}`);
       const [hh, mm, ss] = rundown.jam.split(":");
-      const eventTime = new Date();
-      eventTime.setHours(+hh, +mm, +(ss || 0), 0);
+      // Construct eventTime using rundown.tanggal and rundown.jam
+      const eventDateParts = rundown.tanggal.split("-"); // assuming format YYYY-MM-DD
+      const eventTime = new Date(
+        +eventDateParts[0],
+        +eventDateParts[1] - 1,
+        +eventDateParts[2],
+        +hh,
+        +mm,
+        +(ss || 0),
+        0
+      );
 
       const reminderTime = new Date(eventTime.getTime() - 5 * 60000);
-      if (reminderTime <= now) return;
+      if (reminderTime <= now) {
+        console.log(`Skipping rundown ID ${rundown.rundown_id} because reminder time ${reminderTime} is in the past`);
+        return;
+      }
 
       const cronExpr = `${reminderTime.getMinutes()} ${reminderTime.getHours()} * * *`;
+      console.log(`Cron expression for rundown ID ${rundown.rundown_id}: ${cronExpr}`);
 
       const job = cron.schedule(cronExpr, async () => {
+        console.log(`Cron job triggered for rundown ID ${rundown.rundown_id}`);
         const message = `Yth. Bapak/Ibu ${rundown.guest_name},
 
 Kami informasikan bahwa Anda terdaftar sebagai tamu dalam acara berikut:
@@ -123,7 +141,7 @@ Kami informasikan bahwa Anda terdaftar sebagai tamu dalam acara berikut:
 📛 *${rundown.event_name}*  
 📌 Kegiatan: ${rundown.kegiatan}  
 📍 Tempat: ${rundown.tempat}  
-🗓️ Tanggal: ${rundown.tanggal}  
+🗓️ Tanggal: ${rundown.date}  
 🕒 Waktu: ${rundown.jam}  
 🎙️ Pembawa Acara: ${rundown.pembawa_acara}
 
@@ -132,7 +150,7 @@ Mohon kesediaan Bapak/Ibu untuk hadir tepat waktu. Kehadiran Anda sangat kami na
 *Pesan ini dikirim secara otomatis sebagai pengingat acara.*  
 Terima kasih. 🙏`;
 
-        let phone = rundown.guest_phone?.replace(/\D/g, "");
+        let phone = rundown.guest_phone?.replace(/\\D/g, "");
         if (!phone || phone.length < 9) {
           console.error(`Invalid nomor: ${rundown.guest_phone}`);
           return;

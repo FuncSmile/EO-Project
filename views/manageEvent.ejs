@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kelola Acara - <%= event.name %></title>
     <link href="/public/output.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="/public/cameraCapture.js"></script>
   </head>
   <body class="bg-gray-50 min-h-screen flex flex-col font-sans">
     <header class="bg-white shadow-md p-6">
@@ -13,12 +15,9 @@
       </h1>
     </header>
     <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
-      <!-- Guest Management -->
       <section class="mb-12">
-        <!-- // Header for Guest Management -->
-        <div
-          class="flex items-center justify-between mb-8 border-b-4 border-blue-600 pb-4"
-        >
+        <!-- Header for Guest Management -->
+        <div class="flex items-center justify-between mb-8 border-b-4 border-blue-600 pb-4">
           <h2 class="text-3xl font-extrabold text-gray-900">Daftar Tamu</h2>
           <a
             href="/dashboard"
@@ -33,11 +32,7 @@
               stroke="currentColor"
               stroke-width="2"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15 19l-7-7 7-7"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </a>
         </div>
@@ -48,9 +43,7 @@
         </p>
         <% } else { %>
         <div class="overflow-x-auto">
-          <table
-            class="min-w-full bg-white rounded-lg shadow-md overflow-hidden"
-          >
+          <table class="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
             <thead class="bg-blue-600 text-white">
               <tr>
                 <th class="py-4 px-6 text-left">Foto</th>
@@ -86,10 +79,19 @@
                   <%= guest.phone || '-' %>
                 </td>
                 <td class="py-4 px-6 text-center">
+                  <button
+                    type="button"
+                    class="inline-block px-4 py-2 bg-green-600 text-white rounded-md shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition mr-2 print-invitation-btn"
+                    data-guest-id="<%= guest.id %>"
+                    data-guest-name="<%= guest.name %>"
+                  >
+                    Cetak Undangan
+                  </button>
                   <form
                     action="/delete_guest/<%= guest.id %>"
                     method="POST"
                     onsubmit="return confirmDelete(event, this);"
+                    class="inline-block"
                   >
                     <button
                       type="submit"
@@ -105,9 +107,12 @@
           </table>
         </div>
         <% } %>
+
         <form
           id="add-guest-form"
           action="/add_guest/<%= event.id %>"
+          method="POST"
+          enctype="multipart/form-data"
           class="mt-10 space-y-6 bg-white p-6 rounded-lg shadow-md max-w-md mx-auto"
         >
           <h3 class="text-2xl font-bold text-gray-900 mb-4">
@@ -197,26 +202,25 @@
         </form>
       </section>
 
-      <!-- Documentation Upload -->
       <section>
-        <h2
-          class="text-3xl font-extrabold text-gray-900 mb-6 border-b-4 border-blue-600 pb-3"
-        >
+        <h2 class="text-3xl font-extrabold text-gray-900 mb-6 border-b-4 border-blue-600 pb-3">
           Upload Dokumentasi
         </h2>
         <form
           id="upload-doc-form"
+          action="/upload_documentation/<%= event.id %>"
+          method="POST"
+          enctype="multipart/form-data"
           class="space-y-6 max-w-md mx-auto bg-white p-6 rounded-lg shadow-md"
         >
           <div>
-            <label
-              for="documentation"
-              class="block mb-2 font-semibold text-gray-700"
-              >Pilih File Dokumentasi</label
-            >
+            <label for="documentation" class="block mb-2 font-semibold text-gray-700">
+              Pilih File Dokumentasi
+            </label>
             <input
               type="file"
               id="documentation"
+              name="documentation"
               accept="image/*,video/*,application/pdf"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               required
@@ -288,164 +292,116 @@
         return false;
       }
     </script>
+
     <script>
-      const video = document.getElementById("video");
-      const canvas = document.getElementById("canvas");
-      const captureBtn = document.getElementById("captureBtn");
-      const retakeBtn = document.getElementById("retakeBtn");
-      const photoDataInput = document.getElementById("photoData");
-      const capturedPhoto = document.getElementById("capturedPhoto");
-      const photoContainer = document.getElementById("photoContainer");
-      // Access the device camera and stream to video element
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          video.srcObject = stream;
-        })
-        .catch((err) => {
-          alert("Tidak dapat mengakses kamera: " + err.message);
-        });
-      captureBtn.addEventListener("click", () => {
-        const context = canvas.getContext("2d");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/png");
-        photoDataInput.value = dataUrl;
-        video.classList.add("hidden");
-        capturedPhoto.src = dataUrl;
-        capturedPhoto.classList.remove("hidden");
-        captureBtn.classList.add("hidden");
-        retakeBtn.classList.remove("hidden");
-      });
-      retakeBtn.addEventListener("click", () => {
-        photoDataInput.value = "";
-        video.classList.remove("hidden");
-        capturedPhoto.classList.add("hidden");
-        captureBtn.classList.remove("hidden");
-        retakeBtn.classList.add("hidden");
-      });
-      // Handle form submission with fetch and JSON
-      const addGuestForm = document.getElementById("add-guest-form");
-      addGuestForm.addEventListener("submit", (e) => {
+      const uploadDocForm = document.getElementById('upload-doc-form');
+      uploadDocForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const phone = document.getElementById("phone").value;
-        const photoBase64 = photoDataInput.value;
-        if (!photoBase64) {
-          event.preventDefault();
-          Swal.fire({
-            title: "silakan ambil foto terlebih dahulu!",
-            text: "foto tamu harus diambil sebelum menambahkan tamu.",
-            icon: "warning",
-            showCancelButton: false,
-            confirmButtonColor: "#dc2626",
-            cancelButtonColor: "#6b7280",
-            confirmButtonText: "Ya,",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              form.submit();
-            }
+        const formData = new FormData(uploadDocForm);
+        try {
+          const response = await fetch(uploadDocForm.action, {
+            method: 'POST',
+            body: formData,
           });
-          return;
-        }
-
-        fetch(addGuestForm.action, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, email, phone, photoBase64 }),
-        })
-          .then((response) => {
-            if (response.ok) {
-              Swal.fire({
-                icon: "success",
-                title: "Tamu berhasil ditambahkan!",
-                timer: 2000,
-                showConfirmButton: false,
-              }).then(() => {
-                window.location.reload();
-              });
-            } else {
-              event.preventDefault();
-              Swal.fire({
-                title: "gagal menambahkan tamu!",
-                text: "Gagal menambahkan tamu. Silakan coba lagi.",
-                icon: "error",
-                showCancelButton: false,
-                confirmButtonColor: "#dc2626",
-                cancelButtonColor: "#6b7280",
-                confirmButtonText: "Ya,",
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  form.submit();
-                }
-              });
-            }
-          })
-          .catch((err) => {
-            alert("Error: " + err.message);
-          });
-      });
-
-      const uploadDocForm = document.getElementById("upload-doc-form");
-      const documentationInput = document.getElementById("documentation");
-      uploadDocForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const file = documentationInput.files[0];
-        if (!file) {
-          Swal.fire({
-            icon: "warning",
-            title: "Belum ada file!",
-            text: "Silakan pilih file dokumentasi terlebih dahulu.",
-          });
-
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const fileBase64 = reader.result;
-          const fileName = file.name;
-          const fileType = file.type;
-          try {
-            const response = await fetch(
-              `/upload_documentation/<%= event.id %>`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ fileName, fileBase64, fileType }),
-              }
-            );
-            if (response.ok) {
-              Swal.fire({
-                icon: "success",
-                title: "Tamu berhasil ditambahkan!",
-                timer: 2000,
-                showConfirmButton: false,
-              }).then(() => {
-                window.location.reload();
-              });
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Gagal menambahkan tamu!",
-                text: "Gagal menambahkan tamu. Silakan coba lagi.",
-                timer: 2000,
-                showConfirmButton: false,
-              }).then(() => {
-                window.location.reload();
-              });
-            }
-          } catch (error) {
-            alert("Error: " + error.message);
+          if (!response.ok) {
+            const text = await response.text();
+            alert('Upload gagal: ' + text);
+            return;
           }
-        };
-        reader.readAsDataURL(file);
+          const result = await response.json();
+          if (result.success) {
+            alert('Upload berhasil');
+            window.location.reload();
+          } else {
+            alert('Upload gagal');
+          }
+        } catch (error) {
+          alert('Terjadi kesalahan: ' + error.message);
+        }
       });
     </script>
-  </body>
-</html>
+
+    <!-- Invitation Modal -->
+    <div id="invitation-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 relative">
+        <button id="close-invitation-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-3xl font-bold focus:outline-none">&times;</button>
+        <div id="invitation-content" class="text-center p-4">
+          <h2 class="text-4xl font-extrabold mb-6 border-b border-gray-300 pb-3">Undangan Acara</h2>
+          <p id="guest-name" class="text-2xl font-semibold mb-8"></p>
+          <div id="qrcode" class="mx-auto mb-8 w-48 h-48 flex items-center justify-center border border-gray-300 rounded-lg shadow-inner bg-white">
+            <canvas id="qrcode-canvas" class="w-44 h-44"></canvas>
+          </div>
+          <p class="mb-8 text-gray-700 text-lg">
+            Anda diundang untuk menghadiri acara kami. Silakan scan QR code di atas untuk konfirmasi kehadiran dan informasi lebih lanjut.
+          </p>
+          <button id="print-invitation" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-semibold shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-400">Cetak Undangan</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Invitation modal elements
+      const invitationModal = document.getElementById('invitation-modal');
+      const closeInvitationModalBtn = document.getElementById('close-invitation-modal');
+      const invitationContent = document.getElementById('invitation-content');
+      const guestNameElem = document.getElementById('guest-name');
+      const qrCodeContainer = document.getElementById('qrcode');
+      const printInvitationBtn = document.getElementById('print-invitation');
+
+      // Show invitation modal with QR code
+      document.querySelectorAll('.print-invitation-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const guestId = button.getAttribute('data-guest-id');
+          const guestName = button.getAttribute('data-guest-name');
+          guestNameElem.textContent = `Undangan untuk: ${guestName}`;
+          // Clear the canvas before drawing new QR code
+          const canvas = document.getElementById('qrcode-canvas');
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const thankYouUrl = `${window.location.origin}/thankyou/${guestId}`;
+          QRCode.toCanvas(canvas, thankYouUrl, { width: 180 }, function (error) {
+            if (error) console.error(error);
+          });
+          invitationModal.classList.remove('hidden');
+        });
+      });
+
+      // Close modal
+      closeInvitationModalBtn.addEventListener('click', () => {
+        invitationModal.classList.add('hidden');
+      });
+      
+      // Print invitation
+      printInvitationBtn.addEventListener('click', () => {
+        // Add delay to ensure QR code is rendered before printing
+        setTimeout(() => {
+          // Convert canvas to image for printing
+          const canvas = document.getElementById('qrcode-canvas');
+          const imgDataUrl = canvas.toDataURL();
+          const img = document.createElement('img');
+          img.src = imgDataUrl;
+          // Explicitly set width and height to fixed pixels
+          img.style.width = '180px';
+          img.style.height = '180px';
+          // Clone invitation content
+          const printContents = invitationContent.cloneNode(true);
+          // Replace canvas with image in cloned content
+          const qrCodeDiv = printContents.querySelector('#qrcode');
+          const canvasInClone = printContents.querySelector('canvas');
+          if (canvasInClone) {
+            qrCodeDiv.replaceChild(img, canvasInClone);
+          }
+          const originalContents = document.body.innerHTML;
+          document.body.innerHTML = '';
+          document.body.appendChild(printContents);
+          // Wait for image to load before printing
+          img.onload = () => {
+            window.print();
+            document.body.innerHTML = originalContents;
+            // Remove reload to avoid issues
+            // window.location.reload();
+          };
+        }, 300);
+      });
+    </script>
+</create_file>

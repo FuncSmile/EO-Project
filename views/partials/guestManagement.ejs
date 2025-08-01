@@ -1,0 +1,186 @@
+<section class="mb-12">
+  <!-- Header for Guest Management -->
+  <div class="flex items-center justify-between mb-8 border-b-4 border-blue-600 pb-4">
+    <h2 class="text-3xl font-extrabold text-gray-900">Daftar Tamu</h2>
+    <a
+      href="/dashboard"
+      aria-label="Kembali ke Dashboard"
+      class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-shadow shadow-md hover:shadow-lg"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-7 w-7"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+  </div>
+
+  <% if (guests.length === 0) { %>
+  <p class="text-center text-gray-600 text-lg mt-4">
+    Belum ada tamu yang terdaftar.
+  </p>
+  <% } else { %>
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
+      <thead class="bg-blue-600 text-white">
+        <tr>
+          <th class="py-4 px-6 text-left">Foto</th>
+          <th class="py-4 px-6 text-left">Nama</th>
+          <th class="py-4 px-6 text-left">Email</th>
+          <th class="py-4 px-6 text-left">No Telepon</th>
+          <th class="py-4 px-6 text-center">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% guests.forEach(guest => { %>
+        <tr class="border-b hover:bg-blue-50 transition">
+          <td class="py-4 px-6">
+            <% if (guest.photo_url) { %>
+            <img
+              src="<%= guest.photo_url %>"
+              alt="Foto <%= guest.name %>"
+              class="w-12 h-12 rounded-full object-cover border border-gray-300"
+            />
+            <% } else { %>
+            <div
+              class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium border border-gray-300 text-sm"
+            >
+              No Photo
+            </div>
+            <% } %>
+          </td>
+          <td class="py-4 px-6 text-gray-800 font-semibold">
+            <%= guest.name %>
+          </td>
+          <td class="py-4 px-6 text-gray-600"><%= guest.email %></td>
+          <td class="py-4 px-6 text-gray-600">
+            <%= guest.phone || '-' %>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <button
+              type="button"
+              class="inline-block px-4 py-2 bg-green-600 text-white rounded-md shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition mr-2 print-invitation-btn"
+              data-guest-id="<%= guest.id %>"
+              data-guest-name="<%= guest.name %>"
+            >
+              Cetak Undangan
+            </button>
+            <form
+              action="/delete_guest/<%= guest.id %>"
+              method="POST"
+              onsubmit="return confirmDelete(event, this);"
+              class="inline-block"
+            >
+              <button
+                type="submit"
+                class="inline-block px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              >
+                Hapus
+              </button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <form
+    id="add-guest-form"
+    action="/add_guest/<%= event.id %>"
+    method="POST"
+    enctype="multipart/form-data"
+    class="mt-10 space-y-6 bg-white p-6 rounded-lg shadow-md max-w-md mx-auto"
+  >
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">
+      Tambah Tamu Baru
+    </h3>
+    <div>
+      <label for="name" class="block mb-2 font-semibold text-gray-700"
+        >Nama</label
+      >
+      <input
+        type="text"
+        id="name"
+        name="name"
+        class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        required
+      />
+    </div>
+    <div>
+      <label for="email" class="block mb-2 font-semibold text-gray-700"
+        >Email</label
+      >
+      <input
+        type="email"
+        id="email"
+        name="email"
+        class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        required
+      />
+    </div>
+    <div>
+      <label for="phone" class="block mb-2 font-semibold text-gray-700"
+        >No Telepon</label
+      >
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      />
+    </div>
+    <div>
+      <label class="block mb-2 font-semibold text-gray-700"
+        >Foto Tamu</label
+      >
+      <div
+        id="photoContainer"
+        class="mb-3 relative w-64 h-48 rounded-lg border border-gray-300 overflow-hidden bg-gray-50"
+      >
+        <video
+          id="video"
+          autoplay
+          playsinline
+          class="w-full h-full object-cover rounded-lg"
+        ></video>
+        <img
+          id="capturedPhoto"
+          src=""
+          alt="Foto Tamu"
+          class="hidden w-full h-full object-cover rounded-lg absolute top-0 left-0"
+        />
+      </div>
+      <div class="flex space-x-3">
+        <button
+          type="button"
+          id="captureBtn"
+          class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        >
+          Ambil Foto
+        </button>
+        <button
+          type="button"
+          id="retakeBtn"
+          class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-md shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition hidden"
+        >
+          Ambil Ulang
+        </button>
+      </div>
+      <canvas id="canvas" class="hidden"></canvas>
+      <input type="hidden" id="photoData" name="photo" />
+    </div>
+    <button
+      type="submit"
+      class="w-full bg-blue-600 text-white font-semibold py-3 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+    >
+      Tambah Tamu
+    </button>
+  </form>
+</section>
